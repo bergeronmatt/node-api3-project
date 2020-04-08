@@ -1,9 +1,19 @@
 const express = require('express');
+//initialize router objects
+const postRouter = require('./posts/postRouter.js');
+const userRouter = require('./users/userRouter.js');
 
 const server = express();
 
+//initialize middleware
+server.use(express.json());
 // initialize the logger middleware
-server.use(logger);
+server.use(logger); //runs properly
+
+
+//initialize endpoints from userRouter.js
+server.use('/api/users', userRouter);
+server.use('/api/users', postRouter);
 
 
 // Sanity Test
