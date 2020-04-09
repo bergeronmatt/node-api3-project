@@ -13,7 +13,7 @@ server.use(logger); //runs properly
 
 //initialize endpoints from userRouter.js
 server.use('/api/users', userRouter);
-server.use('/api/users', postRouter);
+server.use('/api/posts', postRouter);
 
 
 // Sanity Test
