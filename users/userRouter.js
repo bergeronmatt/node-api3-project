@@ -6,34 +6,143 @@ const postDB = require('../posts/postDb.js');
 
 const router = express.Router();
 
-// CREATE 
-router.post('/', (req, res) => {
-  // do your magic!
+/** CREATE **/
+//Posts
+router.post('/', validateUser, (req, res) => {
+  userDB.insert(req.body)
+    .then(user => {
+      res
+        .status(201)
+        .json(user)
+    })
+    .catch(error => {
+      res
+      .status(500)
+      .json({ message: "There was an error while saving the user to the database", error})
+  });
 });
 
+//Subroute Posts
 router.post('/:id/posts', (req, res) => {
-  // do your magic!
-});
+  router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
+  
+    postsDB.insert(req.body)
+      .then(post => {
+        res
+          .status(201)
+          .json(post)
+      })
+      .catch(error => {
+        res
+        .status(500)
+        .json({ message: "There was an error while saving the post to the database", error})
+      })
+  });
+  
+/** READ */
 
 router.get('/', (req, res) => {
-  // do your magic!
+  userDB.get()
+  .then(users => {
+    res
+    .status(200)
+    .json({users})
+  })
+  .catch(error => {
+    res
+    .status(500)
+    .json({ message: "The user list could not be retrieved from the database", error})
+  })
 });
 
-router.get('/:id', (req, res) => {
-  // do your magic!
+router.get('/:id', validateUserId, (req, res) => {
+  const id = req.params.id
+  
+  userDB.getById(id)
+  .then(user => {
+    res
+    .status(200)
+    .json(user)
+  })
+  .catch(error => {
+    res
+    .status(500)
+    .json({ message: "The server could not retrieve the User from the database", error})
+  })
 });
 
-router.get('/:id/posts', (req, res) => {
-  // do your magic!
+// read for posts subroute
+router.get('/:id/posts', validateUserId, (req, res) => {
+  const id = req.params.id  
+
+  userDB.getUserPosts(id)
+   .then(posts => {
+    res
+    .status(200)
+    .json(posts)
+  })
+  .catch(error => {
+    res
+    .status(500)
+    .json({ message: "The server could not retrieve the User's posts from the database", error})
+  })  
 });
 
-router.delete('/:id', (req, res) => {
-  // do your magic!
+/** UPDATE */
+
+router.put('/:id', validateUserId, validateUser, (req, res) => {
+  const id = req.params.id
+  
+  userDB.update(id, req.body)
+  .then(userUpdate => {
+    userDB.getById(id)
+        .then(user => {
+          if (userUpdate === 1){ 
+            res
+              .status(200)
+              .json(user)
+          } else {
+            res
+              .status(406)
+              .json({ message: "The server returned an incorrect response."})
+            }
+          })
+          .catch(error => {
+            res
+              .status(500)
+              .json({ message: "There was an error while modifying the user in the database", error})
+          })
+    })
 });
 
-router.put('/:id', (req, res) => {
-  // do your magic!
+/** Delete */
+
+router.delete('/:id', validateUserId, (req, res) => {
+  const id = req.params.id
+
+  userDB.getById(id)
+    .then(user => {
+        userDB.remove(id)
+            .then(removedUser => {
+               if(removedUser === 1){ 
+                res
+                .status(200)
+                .json({message: `The user with ID number ${id} has been successfully removed.`, user})
+               } else {
+                 res
+                 .status(406)
+                 .json({ message: "The server returned an incorrect response."})
+               }
+            })
+            .catch(error => {
+                res
+                .status(500)
+                .json({ message: "The server could not successfully delete the user.", error})
+            })
+    });
 });
+
+
 
 //custom middleware
 
